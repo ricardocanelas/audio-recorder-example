@@ -1,48 +1,66 @@
 import Head from "next/head";
-import { useRef } from "react";
+import { useCallback, useState, useEffect } from "react";
+import Recorder from "../components/Recorder";
+import DropZone from "../components/DropZone";
+import FilePreview from "../components/FilePreview";
 
-let recorder;
+const uid = () => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
 
 export default function Home() {
-  const audioRef = useRef();
+  const [files, setFiles] = useState([]);
+  const onDrop = useCallback((acceptedFiles) => {
+    setFiles((prev) => [
+      ...prev,
+      ...acceptedFiles.map((file) =>
+        Object.assign(file, {
+          id: uid(),
+          preview: URL.createObjectURL(file),
+        })
+      ),
+    ]);
+  }, []);
 
-  const record = () => {
-    // Request permissions to record audio
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      recorder = new MediaRecorder(stream);
-
-      // Set record to <audio> when recording will be finished
-      recorder.addEventListener("dataavailable", (e) => {
-        audioRef.current.src = URL.createObjectURL(e.data);
-      });
-
-      // Start recording
-      recorder.start();
-    });
+  const removeFile = (file) => {
+    setFiles((prev) => [...prev.filter((f) => f.id !== file.id)]);
   };
 
-  const stop = () => {
-    // Stop recording
-    recorder.stop();
-    // Remove “recording” icon from browser tab
-    recorder.stream.getTracks().forEach((i) => i.stop());
+  const handleStopRecorder = (e) => {
+    setFiles((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        preview: URL.createObjectURL(e.data),
+        type: "audio",
+      },
+    ]);
   };
+
+  useEffect(() => {
+    console.log(files);
+  }, [files]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="flex flex-col  min-h-screen">
       <Head>
-        <title>Create Next App</title>
+        <title>Audio Recorder</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col items-center justify-center flex-1 px-20 text-center">
-        <div className="p-3">
-          <button onClick={record}>record</button>
-          {` | `}
-          <button onClick={stop}>stop</button>
-        </div>
-        <audio ref={audioRef} controls />
-      </main>
+      <Recorder onStop={handleStopRecorder} />
+
+      <div className="flex justify-center flex-1 w-full p-8 bg-gradient-to-b from-gray-100 to-white p-10">
+        {files.length >= 1 && (
+          <div className="flex flex-start flex-wrap items-start">
+            {files.map((file) => (
+              <FilePreview key={file.id} file={file} onRemove={removeFile} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <DropZone onDrop={onDrop} />
     </div>
   );
 }
