@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 let recorder;
 
@@ -9,26 +9,32 @@ const RecorderComponent = ({ onStop }) => {
   const record = () => {
     // Request permissions to record audio
     setRecording(true);
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      recorder = new MediaRecorder(stream);
 
-      // Set record to <audio> when recording will be finished
-      recorder.addEventListener("dataavailable", (e) => {
-        if (onStop) onStop(e);
-        // audioRef.current.src = URL.createObjectURL(e.data);
+    // camera and microphone requires an https connection to work
+    if (navigator && navigator.mediaDevices) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        recorder = new MediaRecorder(stream);
+
+        // Set record to <audio> when recording will be finished
+        recorder.addEventListener("dataavailable", (e) => {
+          if (onStop) onStop(e);
+          // audioRef.current.src = URL.createObjectURL(e.data);
+        });
+
+        // Start recording
+        recorder.start();
       });
-
-      // Start recording
-      recorder.start();
-    });
+    }
   };
 
   const stop = () => {
     setRecording(false);
-    // Stop recording
-    recorder.stop();
-    // Remove “recording” icon from browser tab
-    recorder.stream.getTracks().forEach((i) => i.stop());
+    if (recorder) {
+      // Stop recording
+      recorder.stop();
+      // Remove “recording” icon from browser tab
+      recorder.stream.getTracks().forEach((i) => i.stop());
+    }
   };
 
   return (
