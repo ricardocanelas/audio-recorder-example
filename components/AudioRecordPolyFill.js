@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 const PolyFill = dynamic(
   () =>
     import("audio-recorder-polyfill").then((AudioRecord) => {
+      console.log("[imported]", AudioRecord);
       if (AudioRecord) {
         console.log("[adding-polyfill]", AudioRecord?.default);
         window.MediaRecorder = AudioRecord.default;
@@ -15,11 +16,7 @@ const PolyFill = dynamic(
 
 function hasAudioRecord() {
   if (typeof window !== "undefined") {
-    console.log(
-      "[has-audio-record-?]",
-      window.MediaRecorder,
-      typeof window.MediaRecorder === "undefined"
-    );
+    console.log("[has-audio-record-?]", window.MediaRecorder);
     if (typeof window.MediaRecorder === "undefined") {
       return false;
     }
@@ -29,8 +26,8 @@ function hasAudioRecord() {
 
 const AudioRecordPolyFill = () => {
   console.log("[checking-polyfill]");
-  if (hasAudioRecord()) return <PolyFill />;
-  else null;
+  if (!hasAudioRecord()) return <PolyFill />;
+  else return null;
 };
 
 export default AudioRecordPolyFill;
