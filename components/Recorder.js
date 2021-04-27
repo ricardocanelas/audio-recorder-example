@@ -12,18 +12,21 @@ const RecorderComponent = ({ onStop }) => {
 
     // camera and microphone requires an https connection to work
     if (navigator && navigator.mediaDevices) {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        recorder = new MediaRecorder(stream);
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          recorder = new MediaRecorder(stream);
 
-        // Set record to <audio> when recording will be finished
-        recorder.addEventListener("dataavailable", (e) => {
-          if (onStop) onStop(e);
-          // audioRef.current.src = URL.createObjectURL(e.data);
-        });
+          // Set record to <audio> when recording will be finished
+          recorder.addEventListener("dataavailable", (e) => {
+            if (onStop) onStop(e);
+            // audioRef.current.src = URL.createObjectURL(e.data);
+          });
 
-        // Start recording
-        recorder.start();
-      });
+          // Start recording
+          recorder.start();
+        })
+        .catch(console.log);
     }
   };
 
