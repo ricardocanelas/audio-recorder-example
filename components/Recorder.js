@@ -10,12 +10,19 @@ const RecorderComponent = ({ onStop }) => {
     // Request permissions to record audio
     setRecording(true);
 
+    console.log('%c--logs--', 'color:gray')
+    console.log('[navigator]', navigator);
+    console.log('[mediaDevices]', navigator?.mediaDevices);
+    console.log('[getUserMedia]', navigator?.mediaDevices?.getUserMedia);
+    console.log('[MediaRecorder]', MediaRecorder);
+    console.log('[window.MediaRecorder]', window.MediaRecorder);
+
     // camera and microphone requires an https connection to work
-    if (navigator && navigator.mediaDevices) {
+    if (navigator && navigator.mediaDevices && ) {
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
-          recorder = new MediaRecorder(stream);
+          recorder = new window.MediaRecorder(stream);
 
           // Set record to <audio> when recording will be finished
           recorder.addEventListener("dataavailable", (e) => {
