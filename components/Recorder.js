@@ -5,11 +5,13 @@ let recorder;
 
 const RecorderComponent = ({ onStop }) => {
   const [recording, setRecording] = useState(false);
+  const [error, setError] = useState(false);
   // const audioRef = useRef();
 
   const record = () => {
     // Request permissions to record audio
     setRecording(true);
+    setError(null);
 
     console.log("%c--logs--", "color:gray");
     console.log("[navigator]", navigator);
@@ -27,28 +29,38 @@ const RecorderComponent = ({ onStop }) => {
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
-          recorder = new window.MediaRecorder(stream);
+          try {
+            recorder = new window.MediaRecorder(stream);
 
-          // Set record to <audio> when recording will be finished
-          recorder.addEventListener("dataavailable", (e) => {
-            if (onStop) onStop(e);
-            // audioRef.current.src = URL.createObjectURL(e.data);
-          });
+            // Set record to <audio> when recording will be finished
+            recorder.addEventListener("dataavailable", (e) => {
+              if (onStop) onStop(e);
+              // audioRef.current.src = URL.createObjectURL(e.data);
+            });
 
-          // Start recording
-          recorder.start();
+            // Start recording
+            recorder.start();
+          } catch (err) {
+            setError("recorder failed: ", err);
+          }
         })
-        .catch(console.log);
+        .catch((err) => {
+          setError("capture failed: ", err);
+        });
     }
   };
 
   const stop = () => {
     setRecording(false);
     if (recorder) {
-      // Stop recording
-      recorder.stop();
-      // Remove “recording” icon from browser tab
-      recorder.stream.getTracks().forEach((i) => i.stop());
+      try {
+        // Stop recording
+        recorder.stop();
+        // Remove “recording” icon from browser tab
+        recorder.stream.getTracks().forEach((i) => i.stop());
+      } catch (err) {
+        setError("stop to record failed: ", err);
+      }
     }
   };
 
@@ -64,6 +76,12 @@ const RecorderComponent = ({ onStop }) => {
             stop
           </button>
         </div>
+        {error && (
+          <div>
+            <b>Error: </b>
+            {error}
+          </div>
+        )}
         {/* <audio ref={audioRef} controls /> */}
       </div>
     </>
