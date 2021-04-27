@@ -38,7 +38,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log(files);
+    console.log("[files]", files);
   }, [files]);
 
   return (
